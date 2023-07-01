@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  keycloak:
+    image: keycloak:18.0.2 
+    container_name: keycloak
+    command: -c standalone.xml
+    volumes:
+      - ${PWD}/startup-scripts:/opt/jboss/startup-scripts
+      - ${PWD}/logs:/opt/jboss/keycloak/standalone/log
+      - keycloak-data:/opt/jboss/keycloak/standalone/data
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+    ports:
+        - "8080:8080"
+    restart: always
+    networks:
+      - keyclock-elk
+  filebeat:
+    image: elastic/filebeat:7.17.7
+    container_name: filebeat
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ${PWD}/logs:/usr/share/filebeat/logs
+    networks:
+      - keyclock-elk
+    depends_on:
+      - keycloak
+    restart: unless-stopped
+
+networks:
+  keyclock-elk:
+    external: true
+
+volumes:
+  keycloak-data:

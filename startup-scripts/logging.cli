@@ -1,0 +1,9 @@
+embed-server --server-config=standalone.xml  --std-out=echo
+
+/subsystem=logging/file-handler=file:add(autoflush=true, file={relative-to=jboss.server.log.dir, path="keycloak.log"})
+
+/subsystem=logging/logger=org.keycloak.events/:add(category=org.keycloak.events,level=DEBUG)
+
+/subsystem=logging/root-logger=ROOT:write-attribute(name=handlers,value=[file])
+
+stop-embedded-server
