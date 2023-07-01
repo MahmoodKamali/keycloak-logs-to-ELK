@@ -1,8 +1,8 @@
-# Enable logging all events of keyclock:
+# Enabling Logging of All Keycloak Events:
 
-- Add a directory named `startup-scripts` and create a file named `logging.cli` into it.
+- Create a directory named `startup-scripts` and within it, create a file named `logging.cli`.
 
-- Add the required config lines:
+- Insert the necessary configuration lines:
 
 ```
 embed-server --server-config=standalone.xml  --std-out=echo
@@ -14,20 +14,20 @@ embed-server --server-config=standalone.xml  --std-out=echo
 stop-embedded-server
 ```
 
-- Modify the docker-compose file to include all new created directories and files to apply them during starting the container.
+- Modify the docker-compose file to include the newly created directories and files. This ensures they are applied when the container starts.
 
-# Write logs into a file on keycloak:
+# Writing Logs into a File on Keycloak:
 
-- Add the follwoing config line in the existing `logging.cli` file:
+- Add the following configuration line to the existing `logging.cli` file:
 
 ```
 /subsystem=logging/file-handler=file:add(autoflush=true, file={relative-to=jboss.server.log.dir, path="keycloak.log"})
 ```
-- create `logs` directory and mount it to the container to save all logs in a persistent disk.
+- Create a `logs` directory and mount it to the container to persistently save all logs on a disk.
 
-# Send the logs by filebeat to ELK:
+# Sending Logs via Filebeat to ELK:
 
-- Create a file named `filebeat.yml` or whatever name you like to send the logs to logstash:
+- Create a file named `filebeat.yml` (or any name of your choice) to transmit the logs to Logstash:
 
 ```
 filebeat.inputs:
@@ -39,8 +39,8 @@ output.logstash:
   hosts: ["logstash:5044"]
 ```
 
-- Mount the keycloak's logs to filebeat container in docker-compose file.
-- Create a file named `logstash.conf` into `pipeline` directory and add the following config lines to send the received logs from filebeat to elasticsearch:
+- Mount the Keycloak logs to the Filebeat container in the docker-compose file.
+- Create a file named `logstash.conf` in the `pipeline` directory and add the following configuration lines. These will direct the logs received from Filebeat to Elasticsearch:
 
 ```
 input {
@@ -56,9 +56,9 @@ output {
   }
 }
 ```
-# Configs on Kibana:
+# Configurations on Kibana:
 
-- Login to kibana and go to Management => Stack management => Index patterns. If all configs are OK and filebeat can reach logstash, there must be a pattern named `filebeat-$CURRENT_DATE`. To be able to get all logs of any day, instead of writting `filebeat-$CURRENT_DATE` you must write only `filebeat-*` and then select timestamp and create the index. Now, all logs will be shown at `Discovery` section.
+- Log into Kibana and navigate to Management => Stack Management => Index Patterns. If all configurations are correctly set and Filebeat can connect to Logstash, a pattern named `filebeat-$CURRENT_DATE` should be visible. However, to access all logs of any given day, replace `filebeat-$CURRENT_DATE` with `filebeat-*`, then select timestamp and create the index. Following this, all logs will appear in the `Discovery` section.
 
 
-Note: If your ELK stack is designed to connected to each other by credentials you need to add "filebeat-*" indices into "logstash._writer.json" file to have a sufficient privilage to write filebeat received logs.
+Note: If your ELK stack is designed to connect to each other using credentials, you need to add "filebeat-*" indices into the "logstash._writer.json" file to grant sufficient privileges to write the logs received by Filebeat.
